@@ -1,5 +1,6 @@
 #include <stdio.h>
 int main()
 {
-    printf("hello world");
+    char s = '*';
+    int i = 9 s 8
 }

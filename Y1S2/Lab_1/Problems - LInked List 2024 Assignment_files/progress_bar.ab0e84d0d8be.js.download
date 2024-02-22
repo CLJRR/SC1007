@@ -1,0 +1,150 @@
+/**
+ * @File: progress_bar.js
+ * @Version: 1
+ * @Dependencies: JQUERY
+ * @Constructor Arguments:
+ *      selector: main source element for which upload progress will be tracked
+ *                   and it's type can be a 'FORM' or 'INPUT' type,
+ *      root_div: parent div element for progressbar widget insertion,
+ *      options(optional): js object that contains options and their values as key value pairs
+ *
+ * @Description: Implements custom progress bar widget for ajax forms with
+ * file fields, individual asynchronous file uploads.
+ */
+var HEProgressBar = (function() {
+    return function(selector, root_div, progress_bar_color) {
+
+        // for internal reference
+        var that = this;
+
+        // bind the current src element
+        this.selector = $(selector);
+
+        // bind src element type
+        this.selector_type = $(selector)[0].nodeName;
+
+        // bind the root parent div to inject progress bar widget
+        this.root_div = $(root_div);
+
+        // set is files attached flag
+        this.files_attached = false;
+
+        // track and compute upload progress
+        this.trackProgress = function() {
+            var xhr = $.ajaxSettings.xhr();
+            if(that.selector_type == 'FORM') {
+                // get all file fields
+                var file_fields = $(that.selector).find("input[type=file]");
+
+                // check if any files got attached to this form
+                if(file_fields.length > 0) {
+                    for(var i=0; i<file_fields.length; i++) {
+                        if(file_fields[i].files.length > 0) {
+                            that.files_attached = true;
+                        }
+                    }
+                }
+            }else if(that.selector_type == 'INPUT') {
+                // check if input type is 'file'
+                if($(that.selector).attr("type") == "file") {
+                    // check if it has any files attached to it
+                    if($(that.selector)[0].files.length > 0) {
+                        that.files_attached = true;
+                    }
+                }
+            }
+
+            if(!progress_bar_color){
+                progress_bar_color = '#73b369';
+            }
+
+            // inject the progressbar widget only if the src element contains any
+            // attached files
+            if (xhr.upload && that.files_attached) {
+                // Progress bar widget div injection
+                var _ele =  ''+
+                            '<div class="clear"></div>'+
+                            '<div class="progress-bar-container">'+
+                                '<div class="progress-label-box">'+
+                                    '<div class="progress-label text dark">' + UPLOADING_TEXT + '</div>'+
+                                    '<div class="progress-percentage text dark"></div>'+
+                                '</div>'+
+                                '<div class="clear"></div>'+
+                                '<div class="progress-bar-box">'+
+                                    '<div class="progress-bar"></div>'+
+                                '</div>'+
+                                '<div class="clear"></div>'+
+                            '</div>';
+                // inject the widget content
+                $(that.root_div).html(_ele);
+
+                // now get the progressbar element from the DOM tree
+                var progress_bar = $(that.root_div).find('.progress-bar');
+
+                // upload onprogress handler
+                xhr.upload.addEventListener('progress', function(e){
+                    if (e.lengthComputable) {
+                        var progress = Math.floor((e.loaded / e.total)*100);
+                        progress_bar.css({'width': progress+"%", "background-color": progress_bar_color});
+                        $(that.root_div).find('.progress-percentage').html(progress +"%  ...");
+                    }else {
+                        if(debug) {
+                            console.log("Unable to compute upload progress!");
+                        }
+                    }
+                }, false);
+
+                // upload complete handler
+                xhr.upload.onload = function() {
+                    $(that.root_div).find('.progress-label-box').html(UPLOADED_TEXT + ' ' + SAVING_TEXT);
+                    $(that.root_div).find('.progress-bar').css({'background-color': progress_bar_color});
+                };
+            }
+            return xhr;
+        };
+
+        // additional ajax settings
+        this.ajax_settings = {
+            xhr: this.trackProgress
+        };
+
+        // ajax method with custom argumnets
+        this.ajax = function(_options) {
+            if(that.selector_type == 'FORM') {
+                // remove 'dataType' parameter if set
+                if(_options.dataType) {
+                    delete _options['dataType'];
+                }
+            }
+
+            // concat _options with additional ajax settings
+            var _options = $.extend({}, _options, that.ajax_settings);
+            // original ajax success method
+            var _success = _options.success;
+
+            // wrapper over ajax success method
+            _options.success = function(response) {
+                // call original success method
+                response_status = response['status']
+                _success(response);
+                // show upload success alert if src element has any attached files
+                if(that.files_attached) {
+                    var fadeOutTime = 3000;
+                    $(that.root_div).find('.progress-bar-container').fadeOut(fadeOutTime);
+                    var complete_message = '';
+                    if (response_status == 'ERROR') {
+                        complete_message = UPLOAD_ERROR_MESSAGE;
+                    } else {
+                        complete_message = UPLOAD_SUCCESS_MESSAGE; 
+                    }
+                    addAlert(complete_message, false);
+                }
+            };
+
+            // call JQuery ajax method with _options as arguments
+            var xhr = $.ajax(_options);
+            return xhr;
+        };
+    };
+})();
+// end of module 'HEProgressBar'
