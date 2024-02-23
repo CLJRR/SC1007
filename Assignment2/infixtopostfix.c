@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 #include <limits.h> // Include limits.h for INT_MIN
 #define SIZE 1000   // The limit of expression length
 
@@ -67,6 +68,7 @@ void infixtoPostfix(char *infix, char *postfix)
     s.ll.size = 0;
     while (*infix)
     {
+        // printf("%c\n",*infix);
         if (*infix == '(')
         {
             push(&s, *infix);
@@ -88,7 +90,9 @@ void infixtoPostfix(char *infix, char *postfix)
             pop(&s);
         }
         else if (isEmptyStack(&s))
+        {
             push(&s, *infix);
+        }
         else
         {
             while ((precedence(*infix) <= precedence(peek(&s))) && peek(&s) != '(')
