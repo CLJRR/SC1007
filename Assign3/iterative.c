@@ -26,11 +26,10 @@ typedef struct _stack
 ///////////////////////// function prototypes ////////////////////////////////////
 
 // You should not change the prototypes of these functions
-void postOrderIterativeS1(BSTNode *node);
+void inOrderTraversal(BSTNode *node);
 
 void insertBSTNode(BSTNode **node, int value);
 
-// You may use the following functions or you may write your own
 void push(Stack *stack, BSTNode *node);
 BSTNode *pop(Stack *s);
 BSTNode *peek(Stack *s);
@@ -49,7 +48,7 @@ int main()
     root = NULL;
 
     printf("1: Insert an integer into the binary search tree;\n");
-    printf("2: Print the post-order traversal of the binary search tree;\n");
+    printf("2: Print the in-order traversal of the binary search tree;\n");
     printf("0: Quit;\n");
 
     while (c != 0)
@@ -65,8 +64,8 @@ int main()
             insertBSTNode(&root, i);
             break;
         case 2:
-            printf("The resulting post-order traversal of the binary search tree is: ");
-            postOrderIterativeS1(root); // You need to code this function
+            printf("The resulting in-order traversal of the binary search tree is: ");
+            inOrderTraversal(root); // You need to code this function
             printf("\n");
             break;
         case 0:
@@ -83,45 +82,27 @@ int main()
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void postOrderIterativeS1(BSTNode *root)
+void inOrderTraversal(BSTNode *root)
 {
-
     Stack s;
     s.top = NULL;
+    BSTNode *cur = root;
 
-    if (root == NULL)
-        return;
-
-    if (root->left == NULL)
+    while (cur != NULL || !isEmpty(&s))
     {
-        printf("%d", root->item);
-        return;
+        while (cur != NULL)
+        {
+            push(&s, cur);
+            cur = cur->left;
+        }
+
+        if (cur == NULL && !isEmpty(&s))
+        {
+            cur = pop(&s);
+            printf("%d ", cur->item);
+            cur = cur->right;
+        }
     }
-
-    do
-    {
-        while (root != NULL)
-        {
-            push(&s, root->right);
-            push(&s, root);
-            root = root->left;
-        }
-        root = pop(&s);
-
-        if (root->right != NULL && peek(&s) == root->right)
-        {
-            pop(&s);
-            push(&s, root);
-            root = root->right;
-        }
-
-        else
-        {
-            printf("%d ", root->item);
-            root = NULL;
-        }
-
-    } while (!isEmpty(&s));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
