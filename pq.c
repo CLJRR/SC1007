@@ -265,8 +265,32 @@ int removeNode(ListNode **ptrHead, int index)
 int removeNode2(LinkedList *ll, int index)
 {
 	// write your code here
-	// if (ll->size < index)
-	// 	return 1;
+	ListNode *pre, *cur;
+
+	if (ll->head == NULL)
+		return 1;
+	// case for index 0
+	// ll->size < index || index < 0 ||
+	if (index == 0)
+	{
+		cur = ll->head;
+		ll->head = cur->next;
+		ll->size--;
+		free(cur);
+		return 0;
+	}
+	// case for others
+	if ((pre = findNode(ll->head, index - 1)) != NULL)
+	{
+		if (pre->next == NULL)
+			return 1;
+		cur = pre->next;
+		pre->next = cur->next;
+		free(cur);
+		ll->size--;
+		return 0;
+	}
+	return 1;
 }
 
 int split(ListNode *head, ListNode **ptrEvenList, ListNode **ptrOddList)
@@ -286,8 +310,8 @@ int duplicateReverse(ListNode *head, ListNode **ptrNewHead)
 
 int moveMaxToFront(ListNode **ptrHead)
 {
-
-	// write your code here
+	if (*ptrHead == NULL)
+		return -1;
 }
 
 int concatenate(ListNode **ptrHead1, ListNode *head2)
