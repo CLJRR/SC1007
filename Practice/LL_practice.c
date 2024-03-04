@@ -297,12 +297,43 @@ int split(ListNode *head, ListNode **ptrEvenList, ListNode **ptrOddList)
 {
 
 	// write your code here
+	ListNode *ptr = head;
+	int even = 0;
+	int odd = 0;
+	while (ptr != NULL)
+	{
+		if (ptr->num % 2)
+		{
+			insertNode(ptrOddList, odd, ptr->num);
+			odd++;
+		}
+		else
+		{
+
+			insertNode(ptrEvenList, even, ptr->num);
+			even++;
+		}
+		ptr = ptr->next;
+	}
 }
 
 int duplicateReverse(ListNode *head, ListNode **ptrNewHead)
 {
 
 	// write your code here
+	ListNode *ptr = head;
+	int count = -1;
+	while (ptr != NULL)
+	{
+		ptr = ptr->next;
+		count++;
+	}
+	for (int i = 0; i <= count; i++)
+	{
+		ptr = findNode(head, count - i);
+		insertNode(ptrNewHead, i, ptr->num);
+	}
+	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -312,26 +343,27 @@ int moveMaxToFront(ListNode **ptrHead)
 {
 	if (*ptrHead == NULL)
 		return -1;
-	int max = (*ptrHead)->num;
-	int index = 0;
-	int loc = 0;
-	ListNode *ptr = (*ptrHead)->next;
+	ListNode *ptr = *ptrHead;
+	int max = 0, maxindex = 0, index = 0;
 	while (ptr != NULL)
 	{
-		index++;
-		ptr = ptr->next;
 		if (ptr->num > max)
 		{
 			max = ptr->num;
-			loc = index;
+			maxindex = index;
 		}
+		index++;
+		ptr = ptr->next;
 	}
-	if (loc != 0)
+	if (index == 0)
+		return max;
+	else
 	{
-		removeNode(*ptrHead, loc);
-		insertNode(*ptrHead, 0, max);
+
+		removeNode(ptrHead, index - 1);
+		insertNode(ptrHead, 0, max);
+		return max;
 	}
-	return max;
 	return -1;
 }
 
@@ -339,18 +371,110 @@ int concatenate(ListNode **ptrHead1, ListNode *head2)
 {
 
 	// write your code here
+	ListNode *temp = *ptrHead1, *temp2 = *ptrHead1;
+	// if both empty
+	if (temp == NULL && head2 == NULL)
+		return -1;
+	// if first list empty
+	if (temp == NULL)
+	{
+		temp = head2;
+		head2 = NULL;
+		return 0;
+	}
+	// if second list empty
+	if (head2 == NULL)
+	{
+		return 0;
+	}
+	// else
+	while (temp->next != NULL)
+	{
+		temp = temp->next;
+	}
+	temp->next = head2;
+	head2 = NULL;
+	return 0;
 }
 
 int combineAlternating(ListNode **ptrHead, ListNode *head1, ListNode *head2)
 {
 
 	// write your code here
+	ListNode *ptr = NULL;
+	*ptrHead = head1;
+	// check if heads empty;
+	if (head1 == NULL && head2 == NULL)
+		return -1;
+	if (head1 == NULL)
+
+	{
+		*ptrHead = head2;
+	}
+	if (head2 == NULL)
+	{
+		*ptrHead = head1;
+	}
+
+	ptr = head1;
+	head1 = ptr->next;
+	while (head1 != NULL || head2 != NULL)
+	{
+		if (head2 != NULL)
+		{
+			ptr->next = head2;
+			ptr = ptr->next;
+			head2 = ptr->next;
+		}
+		if (head1 != NULL)
+		{
+			ptr->next = head1;
+			ptr = ptr->next;
+			head1 = ptr->next;
+		}
+	}
+	return 1;
 }
 
 int insertDbl(DblListNode **ptrHead, int index, int value)
 {
-
-	// write your code here
+	// Use the insertNode() function as a reference
+	// Ensure that the pre pointers are updated as well
+	DblListNode *pre, *cur;
+	// If empty list or inserting first node, need to update head pointer
+	if (*ptrHead == NULL || index == 0)
+	{
+		cur = *ptrHead;
+		*ptrHead = malloc(sizeof(DblListNode));
+		(*ptrHead)->num = value;
+		(*ptrHead)->next = cur;
+		(*ptrHead)->pre = NULL;
+		if (cur != NULL)
+			cur->pre = *ptrHead;
+		return 0;
+	}
+	// Find the nodes before and at the target position
+	// We don't have a version of findNode that accepts DblListNode inputs
+	// For now, duplicate the findNode() code in here
+	pre = *ptrHead;
+	while (index > 1)
+	{
+		pre = pre->next;
+		index--;
+	}
+	// Create a new node and reconnect the links
+	if (pre != NULL)
+	{
+		cur = pre->next;
+		pre->next = malloc(sizeof(DblListNode));
+		pre->next->pre = pre;
+		pre->next->next = cur;
+		if (cur != NULL)
+			pre->next->next->pre = pre->next;
+		pre->next->num = value;
+		return 0;
+	}
+	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
