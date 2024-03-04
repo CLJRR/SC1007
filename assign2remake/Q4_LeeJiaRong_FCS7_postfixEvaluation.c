@@ -1,14 +1,15 @@
-////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
 #include <limits.h> // Include limits.h for INT_MIN
-#define SIZE 1000   // The limit of expression length
+
+#define SIZE 1000 // The limit of expression length
+
+////////////////////////////////////////////////////
 
 typedef struct _listnode
 {
-    char item;
+    double item;
     struct _listnode *next;
 } ListNode;
 
@@ -18,118 +19,99 @@ typedef struct _linkedlist
     ListNode *head;
 } LinkedList;
 
-////////////////////////////////// stack    /////////////////////
+////////////////////////////////// stack    /////////
 
 typedef struct stack
 {
     LinkedList ll;
 } Stack;
 
-//////////////////////// function prototypes //////////////////////
+//////////////////////// function prototypes //////////////
 
-void infixtoPostfix(char *, char *); // You should not change the prototypes of these functions
-int precedence(char);                // You may use this utility function or you write your own precedence () function.
+// You should not change the prototypes of these functions
 
-////////////////////////////////////////////////////////////////////
+double postfixEvaluation(char *postfix);
 
-void push(Stack *s, char item);
-int pop(Stack *s);
-int peek(Stack *s);
+////////////////////////////////////////////////////////////
+
+void push(Stack *s, double item);
+double pop(Stack *s);  // Change return type to double
+double peek(Stack *s); // Change return type to double
 int isEmptyStack(Stack *s);
 
 //////////////////////////////////////////////////////////////
 void printList(LinkedList *ll);
 ListNode *findNode(LinkedList *ll, int index);
-int insertNode(LinkedList *ll, int index, char item);
+int insertNode(LinkedList *ll, int index, double item);
 int removeNode(LinkedList *ll, int index);
 void removeAllItems(LinkedList *ll);
 
-///////////////////////////////////////////////////////////////
-//
+//////////////////////////////////////////////////////////////
 
 int main()
 {
-    char infix[SIZE];
     char postfix[SIZE];
 
-    printf("Enter an infix expression:\n");
-    scanf("%[^\n]%*c", infix);
+    printf("Enter a postfix expression:\n");
+    scanf("%[^\n]%*c", postfix);
 
-    infixtoPostfix(infix, postfix);
-    printf("The postfix expression is \n");
-    printf("%s\n", postfix);
+    printf("The answer is %.2lf\n", postfixEvaluation(postfix)); // Correct function name
+
     return 0;
 }
 
-void infixtoPostfix(char *infix, char *postfix)
+double postfixEvaluation(char *postfix)
 {
+    // add your code here
     Stack s;
     s.ll.head = NULL;
     s.ll.size = 0;
-    while (*infix)
+    char op;
+    double int1 = 0, int2 = 0;
+
+    while (*postfix)
     {
-        // printf("%c\n",*infix);
-        if (*infix == '(')
-        {
-            push(&s, *infix);
-        }
-        else if (isalnum(*infix))
-        {
-            *postfix = *infix;
-            postfix++;
-        }
-        else if (*infix == ')')
-        {
-            while (peek(&s) != '(')
-            {
-                *postfix = pop(&s);
-                postfix++;
-            }
-            pop(&s);
-        }
-        else if (isEmptyStack(&s))
-        {
-            push(&s, *infix);
-        }
+        if (*postfix <= '9' && *postfix >= '0')
+            push(&s, *postfix - '0');
         else
         {
-            while ((precedence(*infix) <= precedence(peek(&s))) && peek(&s) != '(' && !isEmptyStack(&s))
+            int2 = pop(&s);
+            int1 = pop(&s);
+            double ans = 0;
+            if (*postfix == '+')
             {
-                *postfix = pop(&s);
-                postfix++;
-                // if (isEmptyStack(&s))
-                //     break;
+                ans = int1 + int2;
             }
-            push(&s, *infix);
+            else if (*postfix == '-')
+            {
+                ans = int1 - int2;
+            }
+            else if (*postfix == '*')
+            {
+                ans = int1 * int2;
+            }
+            else if (*postfix == '/')
+            {
+                ans = int1 / int2;
+            }
+
+            push(&s, ans);
         }
-        infix++;
-    }
-    while (!isEmptyStack(&s))
-    {
-        *postfix = pop(&s);
         postfix++;
     }
-    *postfix = '\0';
+    return (pop(&s));
 }
 
-int precedence(char op)
-{
-    if (op == '*' || op == '/')
-        return 1;
-    else
-        return 0;
-}
+//////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////
-
-void push(Stack *s, char item)
+void push(Stack *s, double item)
 {
     insertNode(&(s->ll), 0, item);
 }
 
-int pop(Stack *s)
-{
-    char item;
+double pop(Stack *s)
+{ // Change return type to double
+    double item;
     if (!isEmptyStack(s))
     {
         item = ((s->ll).head)->item;
@@ -139,8 +121,8 @@ int pop(Stack *s)
     return INT_MIN;
 }
 
-int peek(Stack *s)
-{
+double peek(Stack *s)
+{ // Change return type to double
     return ((s->ll).head)->item;
 }
 
@@ -151,7 +133,7 @@ int isEmptyStack(Stack *s)
     return 0;
 }
 
-//////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
 void printList(LinkedList *ll)
 {
@@ -165,7 +147,7 @@ void printList(LinkedList *ll)
         printf("Empty");
     while (cur != NULL)
     {
-        printf("%c ", cur->item);
+        printf("%.2lf ", cur->item);
         cur = cur->next;
     }
     printf("\n");
@@ -195,7 +177,7 @@ ListNode *findNode(LinkedList *ll, int index)
     return temp;
 }
 
-int insertNode(LinkedList *ll, int index, char value)
+int insertNode(LinkedList *ll, int index, double value)
 {
 
     ListNode *pre, *cur;
