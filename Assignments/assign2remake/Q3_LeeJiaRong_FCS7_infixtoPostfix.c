@@ -65,23 +65,21 @@ void infixtoPostfix(char *infix, char *postfix)
 	s.ll.size = 0;
 	while (*infix)
 	{
-		if (*infix == '(')
-		{
-			push(&s, *infix);
-		}
-		else if ((*infix >= '0' && *infix <= '9') || (*infix >= 'A' && *infix <= 'Z') || (*infix >= 'a' && *infix <= 'z'))
+		if ((*infix >= 'a' && *infix <= 'z') || (*infix >= 'A' && *infix <= 'Z') || (*infix >= '0' && *infix <= '9'))
 		{
 			*postfix = *infix;
 			postfix++;
 		}
+		else if (*infix == '(')
+		{
+			push(&s, *infix);
+		}
 		else if (*infix == ')')
 		{
-			while (1)
+			while (peek(&s) != '(')
 			{
 				*postfix = pop(&s);
 				postfix++;
-				if (peek(&s) == '(')
-					break;
 			}
 			pop(&s);
 		}
@@ -91,12 +89,10 @@ void infixtoPostfix(char *infix, char *postfix)
 		}
 		else
 		{
-			while ((precedence(*infix) <= precedence(peek(&s))) && peek(&s) != '(')
+			while (peek(&s) != '(' && precedence(peek(&s)) > precedence(*infix) && !isEmptyStack(&s))
 			{
 				*postfix = pop(&s);
 				postfix++;
-				if (isEmptyStack(&s) || peek(&s) == '(')
-					break;
 			}
 			push(&s, *infix);
 		}

@@ -122,13 +122,47 @@ int isBST(BTNode *node, int min, int max) // the item stored in node has to be s
 
 BTNode *removeBSTNode(BTNode *node, int value)
 {
-	// write your code here
+	BTNode *t;
+
+	if (node == NULL)
+	{
+		printf("can't find the value!\n");
+		return NULL;
+	}
+	if (value < node->item)
+		node->left = removeBSTNode(node->left, value);
+	else if (value > node->item)
+		node->right = removeBSTNode(node->right, value);
+	else
+	{
+		//  if node = 2 children
+		if (node->left != NULL && node->right != NULL)
+		{
+			t = findMin(node->right);
+			node->item = t->item;
+			node->right = removeBSTNode(node->right, t->item);
+		}
+		else
+		{
+			t = node;
+			if (node->left != NULL)
+				node = node->left;
+			else
+				node = node->right;
+			free(t);
+		}
+	}
+	return node;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BTNode *findMin(BTNode *p)
 {
+	if (p->left == NULL)
+		return p;
+
+	return findMin(p->left);
 	// write your code here
 }
 

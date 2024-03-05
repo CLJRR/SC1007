@@ -93,6 +93,7 @@ void inOrderTraversal(BSTNode *root)
     {
         while (root != NULL)
         {
+            
             push(&s, root);
             root = root->left;
         }
