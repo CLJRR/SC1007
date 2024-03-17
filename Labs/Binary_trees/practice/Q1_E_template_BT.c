@@ -1,3 +1,4 @@
+
 //////////////////////////////////////////////////////////////////////////////////
 
 #include <stdio.h>
@@ -27,7 +28,7 @@ typedef struct _stack
 ///////////////////////// function prototypes ////////////////////////////////////
 
 // You should not change the prototypes of these functions
-int identical(BTNode *tree1, BTNode *tree2);
+int maxHeight(BTNode *node);
 
 BTNode *createBTNode(int item);
 
@@ -42,60 +43,38 @@ void removeAll(BTNode **node);
 
 int main()
 {
-    int c, s;
+    int c;
     char e;
-    BTNode *root1, *root2;
-
-    root1 = NULL;
-    root2 = NULL;
     c = 1;
 
-    printf("1: Create a binary tree1.\n");
-    printf("2: Create a binary tree2.\n");
-    printf("3: Check whether two trees are structurally identical.\n");
+    BTNode *root;
+    root = NULL;
+
+    printf("1: Create a binary tree.\n");
+    printf("2: Find the maximum height of the binary tree.\n");
     printf("0: Quit;\n");
 
     while (c != 0)
     {
-        printf("Please input your choice(1/2/3/0): ");
+        printf("\nPlease input your choice(1/2/0): ");
         if (scanf("%d", &c) > 0)
-
         {
-
             switch (c)
             {
             case 1:
-                removeAll(&root1);
-                printf("Creating tree1:\n");
-                root1 = createTree();
-                printf("The resulting tree1 is: ");
-                printTree(root1);
+                removeAll(&root);
+                root = createTree();
+                printf("The resulting binary tree is: ");
+                printTree(root);
                 printf("\n");
                 break;
             case 2:
-                removeAll(&root2);
-                printf("Creating tree2:\n");
-                root2 = createTree();
-                printf("The resulting tree2 is: ");
-                printTree(root2);
-                printf("\n");
-                break;
-            case 3:
-                s = identical(root1, root2);
-                if (s)
-                {
-                    printf("Both trees are structurally identical.\n");
-                }
-                else
-                {
-                    printf("Both trees are different.\n");
-                }
-                removeAll(&root1);
-                removeAll(&root2);
+                c = maxHeight(root);
+                printf("The maximum height of the binary tree is: %d\n", c);
+                removeAll(&root);
                 break;
             case 0:
-                removeAll(&root1);
-                removeAll(&root2);
+                removeAll(&root);
                 break;
             default:
                 printf("Choice unknown;\n");
@@ -107,24 +86,25 @@ int main()
             scanf("%c", &e);
         }
     }
+
     return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 
-int identical(BTNode *tree1, BTNode *tree2)
+int maxHeight(BTNode *node)
 
 {
-    if (tree1 == NULL && tree2 == NULL)
-        return 1;
-    int l = identical(tree1->left, tree2->left);
-    int r = identical(tree1->right, tree2->right);
-    if (tree1->item != tree2->item)
-        return 0;
-    return l * r;
+    if (node == NULL)
+        return -1;
+    int l = maxHeight(node->left);
+    int r = maxHeight(node->right);
+    if (l > r)
+        return l + 1;
+    else
+        return r + 1;
 }
-
-/////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 
 BTNode *createBTNode(int item)
 {

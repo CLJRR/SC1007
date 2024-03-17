@@ -26,10 +26,11 @@ typedef struct _stack
 ///////////////////////// function prototypes ////////////////////////////////////
 
 // You should not change the prototypes of these functions
-void inOrderTraversal(BSTNode *node);
+void postOrderIterativeS1(BSTNode *node);
 
 void insertBSTNode(BSTNode **node, int value);
 
+// You may use the following functions or you may write your own
 void push(Stack *stack, BSTNode *node);
 BSTNode *pop(Stack *s);
 BSTNode *peek(Stack *s);
@@ -48,7 +49,7 @@ int main()
     root = NULL;
 
     printf("1: Insert an integer into the binary search tree;\n");
-    printf("2: Print the in-order traversal of the binary search tree;\n");
+    printf("2: Print the post-order traversal of the binary search tree;\n");
     printf("0: Quit;\n");
 
     while (c != 0)
@@ -64,8 +65,8 @@ int main()
             insertBSTNode(&root, i);
             break;
         case 2:
-            printf("The resulting in-order traversal of the binary search tree is: ");
-            inOrderTraversal(root); // You need to code this function
+            printf("The resulting post-order traversal of the binary search tree is: ");
+            postOrderIterativeS1(root); // You need to code this function
             printf("\n");
             break;
         case 0:
@@ -82,27 +83,40 @@ int main()
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void inOrderTraversal(BSTNode *root)
+void postOrderIterativeS1(BSTNode *root)
 {
-    Stack s;
+
+    Stack s; // create empty stack
     s.top = NULL;
     if (root == NULL)
         return;
 
-    while (root != NULL || !isEmpty(&s))
+    while (1)
     {
         while (root != NULL)
         {
-            
+            if (root->right != NULL)
+                push(&s, root->right);
             push(&s, root);
             root = root->left;
         }
-        if (root == NULL && !isEmpty(&s))
+
+        root = pop(&s);
+
+        if (root->right != NULL && root->right == peek(&s))
         {
-            root = pop(&s);
-            printf("%d, ", root->item);
+            pop(&s);
+            push(&s, root);
             root = root->right;
         }
+
+        else
+        {
+            printf("%d ", root->item);
+            root = NULL;
+        }
+        if (isEmpty(&s))
+            break;
     }
 }
 
