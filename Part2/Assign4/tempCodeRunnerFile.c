@@ -102,12 +102,12 @@ int HashInsert(int key, HashSlot hashTable[])
     for (count; count < TABLESIZE; count++)
     {
         bin = hash1(bin + (count * prime));
-        if (hashTable[bin].indicator == EMPTY)
+        if (hashTable[bin].indicator != USED)
             break;
         if (hashTable[bin].key == key)
             return -1;
     }
-    if (hashTable[bin].indicator == EMPTY)
+    if (hashTable[bin].indicator != USED)
     {
         hashTable[bin].indicator = USED;
         hashTable[bin].key = key;
@@ -119,4 +119,18 @@ int HashInsert(int key, HashSlot hashTable[])
 int HashDelete(int key, HashSlot hashTable[])
 {
     // Write your code here
+    int bin = hash1(key);
+    int count = 0;
+    int prime = hash2(key);
+
+    for (count; count < TABLESIZE; count++)
+    {
+        bin = hash1(bin + (count * prime));
+        if (hashTable[bin].indicator == USED && hashTable[bin].key == key)
+        {
+            hashTable[bin].indicator = DELETED;
+            return count + 1;
+        }
+    }
+    return -1;
 }
