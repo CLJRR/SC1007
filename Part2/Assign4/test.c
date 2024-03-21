@@ -94,36 +94,49 @@ int hash2(int key)
 
 int HashInsert(int key, HashSlot hashTable[])
 {
-    int base = hash1(key), prime = hash2(key);
-    int count = 0, bin;
-    int deleted = TABLESIZE + 1, dcount; // temp storage for deleted bin
+    // Write your code here
 
-    // check fpr dupes
-    for (count; count < TABLESIZE; count++)
+    int i = 0, count, comp, first_del = TABLESIZE + 1;
+    count = comp = 0;
+
+    i = hash1(key);
+
+    while (count < TABLESIZE)
     {
-        bin = hash1(base + count * prime);
-        if (hashTable[bin].key == key) // when encounter dupe, return -1 (dupe found)
-            return -1;
-        if (hashTable[bin].indicator == DELETED && deleted > TABLESIZE) // save first "deleted" bin
-        {
-            deleted = bin;
-            dcount = count;
-        }
-        if (hashTable[bin].indicator == EMPTY) // when encounter an empty bin, break (empty means end of hashing)
+
+        if (hashTable[i].indicator == EMPTY)
             break;
-    }
-    if (count < TABLESIZE) // if table not full, update key and indicator
-    {
-        if (deleted != TABLESIZE + 1) // swap if there is a deleted bin found before
-        {
-            bin = deleted;
-            count = dcount;
-        }
 
-        hashTable[bin].indicator = USED;
-        hashTable[bin].key = key;
+        else if (hashTable[i].indicator == USED && hashTable[i].key == key)
+            return -1;
+
+        else if (hashTable[i].indicator == DELETED)
+        {
+
+            if (first_del == TABLESIZE + 1)
+            {
+                first_del = i;
+                comp = count;
+            }
+        }
+        count++;
+        i = hash1(key + count * hash2(key));
     }
-    return count;
+    if (count < TABLESIZE)
+        return count;
+
+    if (first_del != TABLESIZE + 1)
+    {
+        hashTable[first_del].key = key;
+        hashTable[first_del].indicator = USED;
+        return comp;
+    }
+    else
+    {
+        hashTable[i].key = key;
+        hashTable[i].indicator = USED;
+        return count;
+    }
 }
 int HashDelete(int key, HashSlot hashTable[])
 {
@@ -141,7 +154,7 @@ int HashDelete(int key, HashSlot hashTable[])
             hashTable[bin].indicator = DELETED;
             return count + 1;
         }
-        if (hashTable[bin].indicator == EMPTY) // return not found
+        if (hashTable[bin].indicator == EMPTY)
         {
             return -1;
         }
