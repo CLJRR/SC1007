@@ -94,29 +94,54 @@ int hash2(int key)
 
 int HashInsert(int key, HashSlot hashTable[])
 {
-    // Write your code here
-    int bin = hash1(key);
-    int count = 0;
-    int prime = hash2(key);
+    int base = hash1(key), prime = hash2(key);
+    int count, bin;
+    int deleted = TABLESIZE + 1, dcount; // temp storage for deleted bin
 
-    for (count; count < TABLESIZE; count++)
+    // find empty slot
+    for (count = 0; count < TABLESIZE; count++)
     {
-        bin = hash1(bin + (count * prime));
-        if (hashTable[bin].indicator == EMPTY)
+        bin = (hash1(key) + count * hash2(key)) % TABLESIZE;
+        if (hashTable[bin].indicator == EMPTY || hashTable[bin].indicator == DELETED) // when encounter an empty bin, break (empty means end of hashing)
             break;
-        if (hashTable[bin].key == key)
+        if (hashTable[bin].indicator == USED && hashTable[bin].key == key) // when encounter an Used, check for dupes
             return -1;
     }
-    if (hashTable[bin].indicator == EMPTY)
+    // if no empty slot, return
+    if (count > TABLESIZE)
+        return count;
+    int bin2;
+    // continue checking for dupes
+    for (int i = count; i < TABLESIZE; i++)
     {
-        hashTable[bin].indicator = USED;
-        hashTable[bin].key = key;
-        return count + 1;
+        bin2 = (hash1(key) + count * hash2(key)) % TABLESIZE;
+        if (hashTable[bin2].indicator == EMPTY) // when encounter an empty bin, break (empty means end of hashing)
+            break;
+        if (hashTable[bin].indicator == USED && hashTable[bin].key == key) // when encounter an Used, check for dupes
+            return -1;
     }
-    return -1;
+    // if no dupes, update
 }
-
 int HashDelete(int key, HashSlot hashTable[])
 {
     // Write your code here
+    int base = hash1(key);
+    int count;
+    int bin;
+    int prime = hash2(key);
+
+    for (count = 0; count < TABLESIZE; count++)
+    {
+        bin = (hash1(key) + count * hash2(key)) % TABLESIZE;
+        if (hashTable[bin].indicator == USED && hashTable[bin].key == key)
+        {
+            hashTable[bin].indicator = DELETED;
+            return count + 1;
+        }
+        if (hashTable[bin].indicator == EMPTY) // return not found
+        {
+            return -1;
+        }
+    }
+    return -1;
 }
