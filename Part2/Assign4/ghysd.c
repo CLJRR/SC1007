@@ -131,7 +131,7 @@ int HashInsert(HashTable *Q1Ptr, int key)
     if (node != NULL)
         return 0;
     int bin = Hash(key, LOAD_FACTOR);
-    Q1Ptr->Table->head
+    Q1Ptr->Table->head;
 }
 
 int HashDelete(HashTable *Q1Ptr, int key)

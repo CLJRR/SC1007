@@ -99,11 +99,9 @@ int HashInsert(int key, HashSlot hashTable[])
     int i = 0, count, comp, first_del = TABLESIZE + 1;
     count = comp = 0;
 
-    i = hash1(key);
-
     while (count < TABLESIZE)
     {
-
+        i = hash1(key + count * hash2(key));
         if (hashTable[i].indicator == EMPTY)
             break;
 
@@ -120,9 +118,8 @@ int HashInsert(int key, HashSlot hashTable[])
             }
         }
         count++;
-        i = hash1(key + count * hash2(key));
     }
-    if (count < TABLESIZE)
+    if (count >= TABLESIZE)
         return count;
 
     if (first_del != TABLESIZE + 1)
