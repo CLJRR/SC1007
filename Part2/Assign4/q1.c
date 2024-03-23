@@ -102,7 +102,7 @@ int HashInsert(int key, HashSlot hashTable[])
     for (count; count < TABLESIZE; count++)
     {
         bin = hash1(base + count * prime);
-        if (hashTable[bin].key == key) // when encounter dupe, return -1 (dupe found)
+        if (hashTable[bin].key == key && hashTable[bin].indicator == USED) // when encounter dupe, return -1 (dupe found)
             return -1;
         if (hashTable[bin].indicator == DELETED && deleted > TABLESIZE) // save first "deleted" bin
         {
@@ -141,7 +141,7 @@ int HashDelete(int key, HashSlot hashTable[])
             hashTable[bin].indicator = DELETED;
             return count + 1;
         }
-        if (hashTable[bin].indicator == EMPTY) // return not found
+        if (hashTable[bin].indicator == EMPTY)
         {
             return -1;
         }
