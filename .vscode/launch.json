@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/calvi/AppData/Local/Temp/20c6e47e-a819-4f1f-a275-266bd29f11a8_NgZiYuan_FCSC_Assignment4.zip.1a8",
-      "program": "c:/Users/calvi/AppData/Local/Temp/20c6e47e-a819-4f1f-a275-266bd29f11a8_NgZiYuan_FCSC_Assignment4.zip.1a8/build/Debug/outDebug",
+      "cwd": "c:/Users/calvi/source/repos/SC1006/Part2/Assign4",
+      "program": "c:/Users/calvi/source/repos/SC1006/Part2/Assign4/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
