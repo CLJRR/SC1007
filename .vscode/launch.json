@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/calvi/source/repos/SC1006",
-      "program": "c:/Users/calvi/source/repos/SC1006/build/Debug/outDebug",
+      "cwd": "c:/Users/calvi/source/repos/SC1006/Part2/Assign4",
+      "program": "c:/Users/calvi/source/repos/SC1006/Part2/Assign4/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

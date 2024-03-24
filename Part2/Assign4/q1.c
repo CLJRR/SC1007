@@ -95,15 +95,17 @@ int hash2(int key)
 int HashInsert(int key, HashSlot hashTable[])
 {
     int base = hash1(key), prime = hash2(key);
-    int count = 0, bin;
+    int count, bin;
     int deleted = TABLESIZE + 1, dcount; // temp storage for deleted bin
 
-    // check fpr dupes
-    for (count; count < TABLESIZE; count++)
+    // check for dupes, runs from 0 - 36 (h-1)
+    for (count = 0; count < TABLESIZE; count++)
     {
         bin = hash1(base + count * prime);
-        if (hashTable[bin].key == key) // when encounter dupe, return -1 (dupe found)
+
+        if (hashTable[bin].key == key && hashTable[bin].indicator == USED) // when encounter dupe, return -1 (dupe found)
             return -1;
+
         if (hashTable[bin].indicator == DELETED && deleted > TABLESIZE) // save first "deleted" bin
         {
             deleted = bin;
@@ -112,14 +114,14 @@ int HashInsert(int key, HashSlot hashTable[])
         if (hashTable[bin].indicator == EMPTY) // when encounter an empty bin, break (empty means end of hashing)
             break;
     }
-    if (count < TABLESIZE) // if table not full, update key and indicator
+    if (count < TABLESIZE) // if table not full, update key and indicator, else return
     {
         if (deleted != TABLESIZE + 1) // swap if there is a deleted bin found before
         {
             bin = deleted;
             count = dcount;
         }
-
+        // update empty / deleted bin and return
         hashTable[bin].indicator = USED;
         hashTable[bin].key = key;
     }
@@ -141,7 +143,7 @@ int HashDelete(int key, HashSlot hashTable[])
             hashTable[bin].indicator = DELETED;
             return count + 1;
         }
-        if (hashTable[bin].indicator == EMPTY) // return not found
+        if (hashTable[bin].indicator == EMPTY)
         {
             return -1;
         }
