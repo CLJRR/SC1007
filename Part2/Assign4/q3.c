@@ -94,67 +94,59 @@ int hash2(int key)
 
 int HashInsert(int key, HashSlot hashTable[])
 {
-    // Write your code here
-
-    int i = 0, count, comp, first_del = TABLESIZE + 1;
-    count = comp = 0;
-
-    while (count < TABLESIZE)
+    int base = hash1(key), prime = hash2(key);
+    int count, bin;
+    int avail = -1, cmp = 0; // temp storage for avail bin
+    // check for dupes
+    for (count = 0; count < TABLESIZE; count++)
     {
-        i = hash1(key + count * hash2(key));
-        if (hashTable[i].indicator == EMPTY)
-            break;
-
-        else if (hashTable[i].indicator == USED && hashTable[i].key == key)
-            return -1;
-
-        else if (hashTable[i].indicator == DELETED)
+        bin = (base + count * prime) % TABLESIZE;
+        if (hashTable[bin].indicator == USED)
         {
-
-            if (first_del == TABLESIZE + 1)
-            {
-                first_del = i;
-                comp = count;
-            }
+            cmp++;
+            if (hashTable[bin].key == key) // when encounter dupe, return -1 (dupe found)
+                return -1;
         }
-        count++;
+        else if (hashTable[bin].indicator == EMPTY) // when encounter an empty bin, break (empty means end of hashing)
+        {
+            if (avail == -1) // swap if there is no deleted bin found before
+                avail = bin;
+            break;
+        }
+        else if (hashTable[bin].indicator == DELETED && avail == -1)
+        {
+            if (avail == -1)
+                avail = bin;
+        }
     }
-    if (count >= TABLESIZE)
-        return count;
 
-    if (first_del != TABLESIZE + 1)
+    if (avail != -1) // save
     {
-        hashTable[first_del].key = key;
-        hashTable[first_del].indicator = USED;
-        return comp;
+        hashTable[avail].indicator = USED;
+        hashTable[avail].key = key;
+        return cmp;
     }
-    else
-    {
-        hashTable[i].key = key;
-        hashTable[i].indicator = USED;
-        return count;
-    }
+    return TABLESIZE;
 }
+
 int HashDelete(int key, HashSlot hashTable[])
 {
     // Write your code here
-    int base = hash1(key);
-    int count = 0;
-    int bin;
-    int prime = hash2(key);
-
-    for (count; count < TABLESIZE; count++)
+    int hash = hash1(key);
+    int count = 0, cmps = 0;
+    while (hashTable[hash].indicator != EMPTY && count < TABLESIZE)
     {
-        bin = hash1(base + (count * prime));
-        if (hashTable[bin].indicator == USED && hashTable[bin].key == key)
+        if (hashTable[hash].indicator == USED)
         {
-            hashTable[bin].indicator = DELETED;
-            return count + 1;
+            cmps++;
+            if (hashTable[hash].key == key)
+            {
+                hashTable[hash].indicator = DELETED;
+                return cmps;
+            }
         }
-        if (hashTable[bin].indicator == EMPTY)
-        {
-            return -1;
-        }
+        count++;
+        hash = (hash + hash2(key)) % TABLESIZE;
     }
     return -1;
 }

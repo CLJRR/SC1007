@@ -1,150 +1,227 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define TABLESIZE 37
-#define PRIME 13
+#define LOAD_FACTOR 3
 
-enum Marker
-{
-    EMPTY,
-    USED,
-    DELETED
-};
-
-typedef struct _slot
+typedef struct _listnode
 {
     int key;
-    enum Marker indicator;
-} HashSlot;
+    struct _listnode *next;
+    struct _listnode *pre;
+} ListNode;
 
-int HashInsert(int key, HashSlot hashTable[]);
-int HashDelete(int key, HashSlot hashTable[]);
+typedef struct _linkedlist
+{
+    int size;
+    ListNode *head;
+} HashTableNode;
 
-int hash1(int key);
-int hash2(int key);
+typedef struct _hashTable
+{
+    int hSize;
+    int nSize;
+    HashTableNode *Table;
+} HashTable;
+
+int Hash(int key, int hSize);
+
+ListNode *HashSearch(HashTable, int);
+int HashInsert(HashTable *, int);
+int HashDelete(HashTable *, int);
+
+// In Practice, we will not do it
+void HashPrint(HashTable);
 
 int main()
 {
     int opt;
+    int size;
+
     int i;
     int key;
-    int comparison;
-    HashSlot hashTable[TABLESIZE];
 
-    for (i = 0; i < TABLESIZE; i++)
-    {
-        hashTable[i].indicator = EMPTY;
-        hashTable[i].key = 0;
-    }
+    // Create a HashTable
+    HashTable Q1;
 
     printf("============= Hash Table ============\n");
-    printf("|1. Insert a key to the hash table  |\n");
-    printf("|2. Delete a key from the hash table|\n");
-    printf("|3. Print the hash table            |\n");
-    printf("|4. Quit                            |\n");
+    printf("|1. Create a hash table             |\n");
+    printf("|2. Insert a key to the hash table  |\n");
+    printf("|3. Search a key in the hash table  |\n");
+    printf("|4. Delete a key from the hash table|\n");
+    printf("|5. Print the hash table            |\n");
+    printf("|6. Quit                            |\n");
     printf("=====================================\n");
+
     printf("Enter selection: ");
     scanf("%d", &opt);
-    while (opt >= 1 && opt <= 3)
+    while (opt >= 1 && opt <= 5)
     {
         switch (opt)
         {
         case 1:
+            printf("Enter number of data to be inserted:\n");
+            scanf("%d", &size);
+
+            Q1.hSize = (int)size / LOAD_FACTOR;
+            Q1.nSize = 0;
+
+            Q1.Table = (HashTableNode *)malloc(sizeof(HashTableNode) * (Q1.hSize));
+
+            for (i = 0; i < Q1.hSize; i++)
+            {
+                Q1.Table[i].head = NULL;
+                Q1.Table[i].size = 0;
+            }
+            printf("HashTable is created.\n");
+            break;
+        case 2: // Insertion
             printf("Enter a key to be inserted:\n");
             scanf("%d", &key);
-            comparison = HashInsert(key, hashTable);
-            if (comparison < 0)
-                printf("Duplicate key\n");
-            else if (comparison < TABLESIZE)
-                printf("Insert: %d Key Comparisons: %d\n", key, comparison);
+            if (HashInsert(&Q1, key))
+                printf("%d is inserted.\n", key);
             else
-                printf("Key Comparisons: %d. Table is full.\n", comparison);
+                printf("%d is a duplicate. No key is inserted.\n", key);
             break;
-        case 2:
+        case 3: // Search
+            printf("Enter a key for searching in the HashTable:\n");
+            scanf("%d", &key);
+            ListNode *node = HashSearch(Q1, key);
+
+            if (node != NULL)
+                printf("%d is found.\n", key);
+            else
+                printf("%d is not found.\n", key);
+            break;
+        case 4: // Deletion
             printf("Enter a key to be deleted:\n");
             scanf("%d", &key);
-            comparison = HashDelete(key, hashTable);
-            if (comparison < 0)
-                printf("%d does not exist.\n", key);
-            else if (comparison <= TABLESIZE)
-                printf("Delete: %d Key Comparisons: %d\n", key, comparison);
+            if (HashDelete(&Q1, key))
+                printf("%d is deleted.\n", key);
             else
-                printf("Error\n");
+                printf("%d is not existing.\n", key);
             break;
-        case 3:
-            for (i = 0; i < TABLESIZE; i++)
-                printf("%d: %d %c\n", i, hashTable[i].key, hashTable[i].indicator == DELETED ? '*' : ' ');
+        case 5:
+            HashPrint(Q1);
             break;
         }
+
         printf("Enter selection: ");
         scanf("%d", &opt);
     }
+
+    for (i = 0; i < Q1.hSize; i++)
+    {
+        while (Q1.Table[i].head)
+        {
+            ListNode *temp;
+            temp = Q1.Table[i].head;
+            Q1.Table[i].head = Q1.Table[i].head->next;
+            free(temp);
+        }
+    }
+    free(Q1.Table);
+
     return 0;
 }
 
-int hash1(int key)
+int HashInsert(HashTable *Q1Ptr, int key)
 {
-    return (key % TABLESIZE);
+    // returns 1 when inserted, 0 when not
+    // check for dupes
+    if (HashSearch(*Q1Ptr, key) != NULL)
+        return 0;
+    // save bin location
+    int bin = Hash(key, LOAD_FACTOR);
+    // make new node (.head =NULL for first input)
+    ListNode *newnode = (ListNode *)malloc(sizeof(ListNode));
+    newnode->key = key;
+    newnode->next = Q1Ptr->Table[bin].head;
+    newnode->pre = NULL;
+    // save pre as NULL
+    if (Q1Ptr->Table[bin].head != NULL)
+        Q1Ptr->Table[bin].head->pre = newnode;
+    Q1Ptr->Table[bin].head = newnode;
+    Q1Ptr->Table[bin].size++;
+    Q1Ptr->nSize++;
+    return 1;
 }
 
-int hash2(int key)
+int HashDelete(HashTable *Q1Ptr, int key)
 {
-    return (key % PRIME) + 1;
+    // returns 1 when deleted, 0 when not
+    //  check if key exists
+    if (HashSearch(*Q1Ptr, key) == NULL)
+        return 0;
+    // find bin
+    int bin = Hash(key, LOAD_FACTOR);
+    ListNode *ptr = Q1Ptr->Table[bin].head;
+
+    while (ptr->key != key)
+        ptr = ptr->next;
+    if (Q1Ptr->Table[bin].size == 1)
+    {
+        Q1Ptr->Table[bin].head = NULL;
+    }
+    else if (ptr->pre == NULL)
+    {
+        ptr->next->pre = NULL;
+        Q1Ptr->Table[bin].head = ptr->next;
+    }
+    else if (ptr->next == NULL)
+    {
+        ptr->pre->next = NULL;
+    }
+    else
+    {
+        (ptr->pre)->next = ptr->next;
+        (ptr->next)->pre = ptr->pre;
+    }
+    free(ptr);
+    Q1Ptr->Table[bin].size--;
+    Q1Ptr->nSize--;
+    return 1;
 }
 
-int HashInsert(int key, HashSlot hashTable[])
+int Hash(int key, int hSize)
 {
-    int base = hash1(key), prime = hash2(key);
-    int count = 0, bin;
-    int deleted = TABLESIZE + 1, dcount; // temp storage for deleted bin
-
-    // check fpr dupes
-    for (count; count < TABLESIZE; count++)
-    {
-        bin = hash1(base + count * prime);
-        if (hashTable[bin].key == key && hashTable[bin].indicator == USED) // when encounter dupe, return -1 (dupe found)
-            return -1;
-        if (hashTable[bin].indicator == DELETED && deleted > TABLESIZE) // save first "deleted" bin
-        {
-            deleted = bin;
-            dcount = count;
-        }
-        if (hashTable[bin].indicator == EMPTY) // when encounter an empty bin, break (empty means end of hashing)
-            break;
-    }
-    if (count < TABLESIZE) // if table not full, update key and indicator
-    {
-        if (deleted != TABLESIZE + 1) // swap if there is a deleted bin found before
-        {
-            bin = deleted;
-            // count = dcount;
-        }
-
-        hashTable[bin].indicator = USED;
-        hashTable[bin].key = key;
-    }
-    return count;
+    return key % hSize;
 }
-int HashDelete(int key, HashSlot hashTable[])
-{
-    // Write your code here
-    int base = hash1(key);
-    int count = 0;
-    int bin;
-    int prime = hash2(key);
 
-    for (count; count < TABLESIZE; count++)
+ListNode *HashSearch(HashTable Q1, int key)
+{
+    int index;
+
+    ListNode *temp;
+
+    if (Q1.hSize != 0)
+        index = Hash(key, Q1.hSize);
+    else
+        return NULL;
+
+    temp = Q1.Table[index].head;
+    while (temp != NULL)
     {
-        bin = hash1(base + (count * prime));
-        if (hashTable[bin].indicator == USED && hashTable[bin].key == key)
-        {
-            hashTable[bin].indicator = DELETED;
-            return count + 1;
-        }
-        if (hashTable[bin].indicator == EMPTY)
-        {
-            return -1;
-        }
+        if (temp->key == key)
+            return temp;
+        temp = temp->next;
     }
-    return -1;
+
+    return NULL;
+}
+
+void HashPrint(HashTable Q1)
+{
+    int i;
+    ListNode *temp;
+    for (i = 0; i < Q1.hSize; i++)
+    {
+        temp = Q1.Table[i].head;
+        printf("%d:  ", i);
+        while (temp != NULL)
+        {
+            printf("%d -> ", temp->key);
+            temp = temp->next;
+        }
+        printf("\n");
+    }
 }

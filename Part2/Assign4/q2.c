@@ -1,141 +1,232 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define TABLESIZE 37
-#define PRIME 13
+#define LOAD_FACTOR 3
 
-enum Marker
-{
-    EMPTY,
-    USED
-};
-
-typedef struct _slot
+typedef struct _listnode
 {
     int key;
-    enum Marker indicator;
-    int next;
-} HashSlot;
+    struct _listnode *next;
+    struct _listnode *pre;
+} ListNode;
 
-int HashInsert(int key, HashSlot hashTable[]);
-int HashFind(int key, HashSlot hashTable[]);
-
-int hash(int key)
+typedef struct _linkedlist
 {
-    return (key % TABLESIZE);
-}
+    int size;
+    ListNode *head;
+} HashTableNode;
+
+typedef struct _hashTable
+{
+    int hSize;
+    int nSize;
+    HashTableNode *Table;
+} HashTable;
+
+int Hash(int key, int hSize);
+
+ListNode *HashSearch(HashTable, int);
+int HashInsert(HashTable *, int);
+int HashDelete(HashTable *, int);
+
+// In Practice, we will not do it
+void HashPrint(HashTable);
 
 int main()
 {
     int opt;
+    int size;
+
     int i;
     int key;
-    int index;
-    HashSlot hashTable[TABLESIZE];
 
-    for (i = 0; i < TABLESIZE; i++)
-    {
-        hashTable[i].next = -1;
-        hashTable[i].key = 0;
-        hashTable[i].indicator = EMPTY;
-    }
+    // Create a HashTable
+    HashTable Q1;
 
     printf("============= Hash Table ============\n");
-    printf("|1. Insert a key to the hash table  |\n");
-    printf("|2. Search a key in the hash table  |\n");
-    printf("|3. Print the hash table            |\n");
-    printf("|4. Quit                            |\n");
+    printf("|1. Create a hash table             |\n");
+    printf("|2. Insert a key to the hash table  |\n");
+    printf("|3. Search a key in the hash table  |\n");
+    printf("|4. Delete a key from the hash table|\n");
+    printf("|5. Print the hash table            |\n");
+    printf("|6. Quit                            |\n");
     printf("=====================================\n");
 
     printf("Enter selection: ");
     scanf("%d", &opt);
-    while (opt >= 1 && opt <= 3)
+    while (opt >= 1 && opt <= 5)
     {
         switch (opt)
         {
         case 1:
+            printf("Enter number of data to be inserted:\n");
+            scanf("%d", &size);
+
+            Q1.hSize = (int)size / LOAD_FACTOR;
+            Q1.nSize = 0;
+
+            Q1.Table = (HashTableNode *)malloc(sizeof(HashTableNode) * (Q1.hSize));
+
+            for (i = 0; i < Q1.hSize; i++)
+            {
+                Q1.Table[i].head = NULL;
+                Q1.Table[i].size = 0;
+            }
+            printf("HashTable is created.\n");
+            break;
+        case 2: // Insertion
             printf("Enter a key to be inserted:\n");
             scanf("%d", &key);
-            index = HashInsert(key, hashTable);
-            if (index < 0)
-                printf("Duplicate key\n");
-            else if (index < TABLESIZE)
-                printf("Insert %d at index %d\n", key, index);
+            if (HashInsert(&Q1, key))
+                printf("%d is inserted.\n", key);
             else
-                printf("Table is full.\n");
+                printf("%d is a duplicate. No key is inserted.\n", key);
             break;
-        case 2:
+        case 3: // Search
             printf("Enter a key for searching in the HashTable:\n");
             scanf("%d", &key);
-            index = HashFind(key, hashTable);
+            ListNode *node = HashSearch(Q1, key);
 
-            if (index != -1)
-                printf("%d is found at index %d.\n", key, index);
+            if (node != NULL)
+                printf("%d is found.\n", key);
             else
                 printf("%d is not found.\n", key);
             break;
-
-        case 3:
-            printf("index:\t key \t next\n");
-            for (i = 0; i < TABLESIZE; i++)
-                printf("%d\t%d\t%d\n", i, hashTable[i].key, hashTable[i].next);
+        case 4: // Deletion
+            printf("Enter a key to be deleted:\n");
+            scanf("%d", &key);
+            if (HashDelete(&Q1, key))
+                printf("%d is deleted.\n", key);
+            else
+                printf("%d is not existing.\n", key);
+            break;
+        case 5:
+            HashPrint(Q1);
             break;
         }
+
         printf("Enter selection: ");
         scanf("%d", &opt);
     }
+
+    for (i = 0; i < Q1.hSize; i++)
+    {
+        while (Q1.Table[i].head)
+        {
+            ListNode *temp;
+            temp = Q1.Table[i].head;
+            Q1.Table[i].head = Q1.Table[i].head->next;
+            free(temp);
+        }
+    }
+    free(Q1.Table);
+
     return 0;
 }
 
-int HashInsert(int key, HashSlot hashTable[])
+int HashInsert(HashTable *Q1Ptr, int key)
 {
-    int bin = hash(key), temp, count = 0;
-
-    if (hashTable[bin].indicator == EMPTY) // if first indicator is empty, slot in
+    // returns 1 when inserted, 0 when not
+    // check for dupes
+    if (HashSearch(*Q1Ptr, key) != NULL)
+        return 0;
+    // save bin location
+    int bin = Hash(key, Q1Ptr->hSize);
+    // make new node (.head =NULL for first input)
+    ListNode *newnode = (ListNode *)malloc(sizeof(ListNode));
+    if (newnode == NULL)
     {
-        hashTable[bin].indicator = USED;
-        hashTable[bin].key = key;
-        return bin;
+        fprintf(stderr, "Memory allocation failed.\n");
+        exit(EXIT_FAILURE);
     }
-    while (hashTable[bin].next != -1) // find last in next
-    {
-        if (hashTable[bin].key == key)
-            return -1;
-        bin = hashTable[bin].next;
-    }
-    if (hashTable[bin].key == key)
-        return -1;
-    temp = bin;
-    while (hashTable[bin].indicator != EMPTY) // find next avail pos
-    {
-        if (count > TABLESIZE)
-            return count;
-        count++;
-        bin = hash(bin + 1);
-    }
-    // update needed places
-    hashTable[bin].indicator = USED;
-    hashTable[bin].key = key;
-    hashTable[temp].next = bin;
-    return bin;
+    newnode->key = key;
+    newnode->pre = NULL;
+    newnode->next = Q1Ptr->Table[bin].head;
+    // save pre as NULL
+    if (Q1Ptr->Table[bin].head != NULL)
+        Q1Ptr->Table[bin].head->pre = newnode;
+    Q1Ptr->Table[bin].head = newnode;
+    Q1Ptr->Table[bin].size++;
+    Q1Ptr->nSize++;
+    return 1;
 }
 
-int HashFind(int key, HashSlot hashTable[])
+int HashDelete(HashTable *Q1Ptr, int key)
 {
-    int bin = hash(key);
+    // returns 1 when deleted, 0 when not
+    if (HashSearch(*Q1Ptr, key) == NULL || Q1Ptr == NULL) //  check if key exists
+        return 0;
+    int bin = Hash(key, Q1Ptr->hSize); // find bin
+    ListNode *ptr = Q1Ptr->Table[bin].head;
 
-    if (hashTable[bin].indicator == EMPTY) // if first indicator is empty, return not found
+    while (ptr->key != key)
+        ptr = ptr->next;
+    ListNode *prev = ptr->pre;
+    if (Q1Ptr->Table[bin].size == 1)
+
     {
-        return -1;
+        Q1Ptr->Table[bin].head = NULL;
     }
-    while (hashTable[bin].next != -1) // compare until last
+    else if (ptr->pre == NULL)
     {
-        if (hashTable[bin].key == key)
-            return bin;
-        bin = hashTable[bin].next;
+        ptr->next->pre = NULL;
+        Q1Ptr->Table[bin].head = ptr->next;
     }
-    if (hashTable[bin].key == key)
-        return bin;
+    else if (ptr->next == NULL)
+    {
+        ptr->pre->next = NULL;
+    }
     else
-        return -1;
+    {
+        (ptr->pre)->next = ptr->next;
+        (ptr->next)->pre = ptr->pre;
+    }
+    free(ptr);
+    Q1Ptr->Table[bin].size--;
+    Q1Ptr->nSize--;
+    return 1;
+}
+
+int Hash(int key, int hSize)
+{
+    return key % hSize;
+}
+
+ListNode *HashSearch(HashTable Q1, int key)
+{
+    int index;
+
+    ListNode *temp;
+
+    if (Q1.hSize != 0)
+        index = Hash(key, Q1.hSize);
+    else
+        return NULL;
+
+    temp = Q1.Table[index].head;
+    while (temp != NULL)
+    {
+        if (temp->key == key)
+            return temp;
+        temp = temp->next;
+    }
+
+    return NULL;
+}
+
+void HashPrint(HashTable Q1)
+{
+    int i;
+    ListNode *temp;
+    for (i = 0; i < Q1.hSize; i++)
+    {
+        temp = Q1.Table[i].head;
+        printf("%d:  ", i);
+        while (temp != NULL)
+        {
+            printf("%d -> ", temp->key);
+            temp = temp->next;
+        }
+        printf("\n");
+    }
 }

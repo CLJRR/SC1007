@@ -7,42 +7,46 @@
 enum Marker
 {
     EMPTY,
-    USED,
-    DELETED
+    USED
 };
 
 typedef struct _slot
 {
     int key;
     enum Marker indicator;
+    int next;
 } HashSlot;
 
 int HashInsert(int key, HashSlot hashTable[]);
-int HashDelete(int key, HashSlot hashTable[]);
+int HashFind(int key, HashSlot hashTable[]);
 
-int hash1(int key);
-int hash2(int key);
+int hash(int key)
+{
+    return (key % TABLESIZE);
+}
 
 int main()
 {
     int opt;
     int i;
     int key;
-    int comparison;
+    int index;
     HashSlot hashTable[TABLESIZE];
 
     for (i = 0; i < TABLESIZE; i++)
     {
-        hashTable[i].indicator = EMPTY;
+        hashTable[i].next = -1;
         hashTable[i].key = 0;
+        hashTable[i].indicator = EMPTY;
     }
 
     printf("============= Hash Table ============\n");
     printf("|1. Insert a key to the hash table  |\n");
-    printf("|2. Delete a key from the hash table|\n");
+    printf("|2. Search a key in the hash table  |\n");
     printf("|3. Print the hash table            |\n");
     printf("|4. Quit                            |\n");
     printf("=====================================\n");
+
     printf("Enter selection: ");
     scanf("%d", &opt);
     while (opt >= 1 && opt <= 3)
@@ -52,28 +56,29 @@ int main()
         case 1:
             printf("Enter a key to be inserted:\n");
             scanf("%d", &key);
-            comparison = HashInsert(key, hashTable);
-            if (comparison < 0)
+            index = HashInsert(key, hashTable);
+            if (index < 0)
                 printf("Duplicate key\n");
-            else if (comparison < TABLESIZE)
-                printf("Insert: %d Key Comparisons: %d\n", key, comparison);
+            else if (index < TABLESIZE)
+                printf("Insert %d at index %d\n", key, index);
             else
-                printf("Key Comparisons: %d. Table is full.\n", comparison);
+                printf("Table is full.\n");
             break;
         case 2:
-            printf("Enter a key to be deleted:\n");
+            printf("Enter a key for searching in the HashTable:\n");
             scanf("%d", &key);
-            comparison = HashDelete(key, hashTable);
-            if (comparison < 0)
-                printf("%d does not exist.\n", key);
-            else if (comparison <= TABLESIZE)
-                printf("Delete: %d Key Comparisons: %d\n", key, comparison);
+            index = HashFind(key, hashTable);
+
+            if (index != -1)
+                printf("%d is found at index %d.\n", key, index);
             else
-                printf("Error\n");
+                printf("%d is not found.\n", key);
             break;
+
         case 3:
+            printf("index:\t key \t next\n");
             for (i = 0; i < TABLESIZE; i++)
-                printf("%d: %d %c\n", i, hashTable[i].key, hashTable[i].indicator == DELETED ? '*' : ' ');
+                printf("%d\t%d\t%d\n", i, hashTable[i].key, hashTable[i].next);
             break;
         }
         printf("Enter selection: ");
@@ -82,71 +87,55 @@ int main()
     return 0;
 }
 
-int hash1(int key)
-{
-    return (key % TABLESIZE);
-}
-
-int hash2(int key)
-{
-    return (key % PRIME) + 1;
-}
-
 int HashInsert(int key, HashSlot hashTable[])
 {
-    int base = hash1(key), prime = hash2(key);
-    int count, bin;
-    int avail = -1, cmp = 0; // temp storage for avail bin
-    // check for dupes
-    for (count = 0; count < TABLESIZE; count++)
-    {
-        bin = (base + count * prime) % TABLESIZE;
-        if (hashTable[bin].indicator == USED)
-        {
-            cmp++;
-            if (hashTable[bin].key == key) // when encounter dupe, return -1 (dupe found)
-                return -1;
-        }
-        else if (hashTable[bin].indicator == EMPTY) // when encounter an empty bin, break (empty means end of hashing)
-        {
-            if (avail == -1) // swap if there is no deleted bin found before
-                avail = bin;
-            break;
-        }
-        else if (hashTable[bin].indicator == DELETED && avail == -1)
-        {
-            if (avail == -1)
-                avail = bin;
-        }
-    }
+    int bin = hash(key), temp, count = 0;
 
-    if (avail != -1) // save
+    if (hashTable[bin].indicator == EMPTY) // if first indicator is empty, slot in
     {
-        hashTable[avail].indicator = USED;
-        hashTable[avail].key = key;
-        return cmp;
+        hashTable[bin].indicator = USED;
+        hashTable[bin].key = key;
+        return bin;
     }
-    return TABLESIZE;
+    while (hashTable[bin].next != -1) // find last in next
+    {
+        if (hashTable[bin].key == key)
+            return -1;
+        bin = hashTable[bin].next;
+    }
+    if (hashTable[bin].key == key)
+        return -1;
+    temp = bin;
+    while (hashTable[bin].indicator != EMPTY) // find next avail pos
+    {
+        if (count > TABLESIZE)
+            return count;
+        count++;
+        bin = hash(bin + 1);
+    }
+    // update needed places
+    hashTable[bin].indicator = USED;
+    hashTable[bin].key = key;
+    hashTable[temp].next = bin;
+    return bin;
 }
 
-int HashDelete(int key, HashSlot hashTable[])
+int HashFind(int key, HashSlot hashTable[])
 {
-    // Write your code here
-    int hash = hash1(key);
-    int count = 0, cmps = 0;
-    while (hashTable[hash].indicator != EMPTY && count < TABLESIZE)
+    int bin = hash(key);
+
+    if (hashTable[bin].indicator == EMPTY) // if first indicator is empty, return not found
     {
-        if (hashTable[hash].indicator == USED)
-        {
-            cmps++;
-            if (hashTable[hash].key == key)
-            {
-                hashTable[hash].indicator = DELETED;
-                return cmps;
-            }
-        }
-        count++;
-        hash = (hash + hash2(key)) % TABLESIZE;
+        return -1;
     }
-    return -1;
+    while (hashTable[bin].next != -1) // compare until last
+    {
+        if (hashTable[bin].key == key)
+            return bin;
+        bin = hashTable[bin].next;
+    }
+    if (hashTable[bin].key == key)
+        return bin;
+    else
+        return -1;
 }
