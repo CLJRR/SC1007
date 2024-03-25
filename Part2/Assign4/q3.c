@@ -98,35 +98,35 @@ int HashInsert(int key, HashSlot hashTable[])
     int count, bin;
     int avail = -1, cmp = 0; // temp storage for avail bin
     // check for dupes
-    for (count = 0; count < TABLESIZE; count++)
+    for (count = 0; count < TABLESIZE; count++) // frm 0 to h-1
     {
-        bin = (base + count * prime) % TABLESIZE;
-        if (hashTable[bin].indicator == USED)
+        bin = (base + count * prime) % TABLESIZE; // double hashing formula
+        if (hashTable[bin].indicator == USED)     // if used
         {
-            cmp++;
+            cmp++;                         // add cmp
             if (hashTable[bin].key == key) // when encounter dupe, return -1 (dupe found)
                 return -1;
         }
-        else if (hashTable[bin].indicator == EMPTY) // when encounter an empty bin, break (empty means end of hashing)
-        {
-            if (avail == -1) // swap if there is no deleted bin found before
-                avail = bin;
-            break;
-        }
-        else if (hashTable[bin].indicator == DELETED && avail == -1)
+        else if (hashTable[bin].indicator == DELETED && avail == -1) // if found first deleted bin, save it
         {
             if (avail == -1)
                 avail = bin;
         }
+        else if (hashTable[bin].indicator == EMPTY) // when encounter an empty bin, break (empty means end of hashing)
+        {
+            if (avail == -1) // if there was no deleted bin found, empty bin is first avail bin
+                avail = bin;
+            break;
+        }
     }
 
-    if (avail != -1) // save
+    if (avail != -1) // if thrs a avail bin
     {
         hashTable[avail].indicator = USED;
         hashTable[avail].key = key;
         return cmp;
     }
-    return TABLESIZE;
+    return TABLESIZE; // if no avail bin
 }
 
 int HashDelete(int key, HashSlot hashTable[])

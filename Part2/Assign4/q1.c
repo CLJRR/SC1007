@@ -97,23 +97,23 @@ int HashInsert(int key, HashSlot hashTable[])
         hashTable[bin].key = key;
         return bin;
     }
-    while (hashTable[bin].next != -1) // find last in next
+    while (hashTable[bin].next != -1) // find last in table
     {
-        if (hashTable[bin].key == key)
+        if (hashTable[bin].key == key) // if dupe, return -1
             return -1;
         bin = hashTable[bin].next;
     }
-    if (hashTable[bin].key == key)
+    if (hashTable[bin].key == key) // check dupe for last key
         return -1;
     temp = bin;
-    while (hashTable[bin].indicator != EMPTY) // find next avail pos
+    while (hashTable[bin].indicator != EMPTY) // find next avail position
     {
-        if (count > TABLESIZE)
+        if (count > TABLESIZE) // if iterate thru entire table, return
             return count;
         count++;
         bin = hash(bin + 1);
     }
-    // update needed places
+    // update needed items
     hashTable[bin].indicator = USED;
     hashTable[bin].key = key;
     hashTable[temp].next = bin;
@@ -128,14 +128,14 @@ int HashFind(int key, HashSlot hashTable[])
     {
         return -1;
     }
-    while (hashTable[bin].next != -1) // compare until last
+    while (hashTable[bin].next != -1) // compare until last bin found
     {
-        if (hashTable[bin].key == key)
+        if (hashTable[bin].key == key) // return bin if found
             return bin;
         bin = hashTable[bin].next;
     }
-    if (hashTable[bin].key == key)
+    if (hashTable[bin].key == key) // return bin if found
         return bin;
     else
-        return -1;
+        return -1; // return not found
 }
