@@ -1,68 +1,74 @@
-// Input = 5
-// Output = 7
-// f(n) = f(n - 1) + 2 * f(n-2) - 3 * f(n-3)
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-int bottom_up_dp(int n)
+int **M;
+int max(int a, int b)
 {
-    dp[0] = 0;
-    dp[1] = 1;
-    dp[2] = 2;
-
-    for (int i = 3; i <= n; i++)
-    {
-        dp[i] = dp[i - 1] + 2 * dp[i - 2] - 3 * dp[i - 3];
-    }
-
-    return dp[n];
+    if (a >= b)
+        return a;
+    else
+        return b;
 }
-
-int *dp;
-
-int top_down_dp(int n)
+int bottom_up_dp(int n, int *s, int *v, int C)
 {
-    dp[0] = 0;
-    dp[1] = 1;
-    dp[2] = 2;
-
-    if (dp[n] > 0)
-    {
-        return dp[n];
-    }
-
-    if (dp[n - 1] == -1)
-    {
-        dp[n - 1] = top_down_dp(n - 1);
-    }
-    if (dp[n - 2] == -1)
-    {
-        dp[n - 2] = top_down_dp(n - 2);
-    }
-    if (dp[n - 3] == -1)
-    {
-        dp[n - 3] = top_down_dp(n - 3);
-    }
-
-    dp[n] = dp[n - 1] + 2 * dp[n - 2] - 3 * dp[n - 3];
-    return dp[n];
+    // n = no of items
+    // C = capacity
+    // s = item weight
+    // v = item value
+    // if (M[n][C] >= 0)
+    //     return M[n][C];
+    // for (int i = 1; i <= n; i++) // go thru first row
+    // {
+    //     for (int j = 1; j <= C; j++)
+    //     {
+    //         M[i][j] = max(M[i - 1][j], M[i - 1][j - s[i]] + v[i]);
+    //     }
+    // }
+    // return -1000;
 }
 
 int main()
 {
-    int n;
+    int n, C;
     int function;
-    int i;
-    printf("Enter the value of n:\n");
+    int *s;
+    int *v;
+    int i, j;
+    printf("Enter the number of items n:\n");
     scanf("%d", &n);
-
-    // initialize dp array
-    dp = malloc(sizeof(int) * n + 1);
-    for (int i = 0; i <= n; i++)
+    printf("Enter the capacity C:\n");
+    scanf("%d", &C);
+    s = (int *)malloc(sizeof(int) * (n + 1));
+    v = (int *)malloc(sizeof(int) * (n + 1));
+    //----------------------------------------------------------
+    // M[n][C] array initialisation
+    M = malloc(sizeof(int *) * (n + 1)); // int n array of ptrs
+    for (i = 1; i <= n; i++)
     {
-        dp[i] = -1;
+        M[i] = malloc(sizeof(int) * (C + 1)); // int c array of ptrs
     }
+    for (i = 1; i <= n; i++)
+        for (j = 1; j <= C; j++)
+        {
+            M[i][j] = -1;
+        }
 
-    printf("The value of F(%d) is: %d \n", n, top_down_dp(n));
+    for (i = 1; i <= n; i++)
+    {
+        for (j = 1; j <= C; j++)
+        {
+            printf("%d", M[i][j]);
+        }
+        printf("\n");
+    }
+    //----------------------------------------------------------
+    printf("Enter the sizes of items (as a list, separate by spacing:\n");
+    for (i = 1; i <= n; i++)
+        scanf("%d", &s[i]);
+
+    printf("Enter the values of items (as a list, separate by spacing:\n");
+    for (i = 1; i <= n; i++)
+        scanf("%d", &v[i]);
+
+    printf("The maximum value is: %d \n", bottom_up_dp(n, s, v, C));
 }
