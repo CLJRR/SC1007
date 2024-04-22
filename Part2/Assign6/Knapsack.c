@@ -14,8 +14,7 @@ int bottom_up_dp(int n, int *s, int *v, int C)
     //     s = item weight
     //     v = item value
 
-    for (int i = 1; i <= n; i++) // go thru Item 1 to n (rows)
-    {
+    for (int i = 1; i <= n; i++)     // go thru Item 1 to n (rows)
         for (int j = 1; j <= C; j++) // go thru Capacity 1 to C (cols)
         {
             if (j >= s[i]) // if capacity > item weight
@@ -29,7 +28,6 @@ int bottom_up_dp(int n, int *s, int *v, int C)
                 M[i][j] = M[i - 1][j];
             }
         }
-    }
     return M[n][C];
 }
 
@@ -53,11 +51,11 @@ int main()
     {
         M[i] = malloc(sizeof(int) * (C + 1)); // int c array of ptrs
     }
+
     for (i = 0; i <= n; i++)
         for (j = 0; j <= C; j++)
-        {
             M[i][j] = 0;
-        }
+
     //----------------------------------------------------------
     printf("Enter the sizes of items (as a list, separate by spacing:\n");
     for (i = 1; i <= n; i++)

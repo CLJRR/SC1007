@@ -126,71 +126,35 @@ int main()
 
 int HashInsert(HashTable *Q1Ptr, int key)
 {
-    // returns 1 when inserted, 0 when not
-    // check for dupes
-    if (HashSearch(*Q1Ptr, key) != NULL)
+
+    if (HashSearch(*Q1Ptr, key) == NULL || Q1Ptr == NULL) //  check if key exists
         return 0;
-    // save bin location
+    // Find bin
     int bin = Hash(key, Q1Ptr->hSize);
 
-    // make new node
-    ListNode *newnode = (ListNode *)malloc(sizeof(ListNode));
-    if (newnode == NULL) // sanity check
-    {
-        fprintf(stderr, "Memory allocation failed.\n");
-        exit(EXIT_FAILURE);
-    }
+    // ptr to bin
+    ListNode *ptr = Q1Ptr->Table[bin].head;
 
-    // set new node info
+    ListNode *newnode = (ListNode *)malloc(sizeof(ListNode));
     newnode->key = key;
     newnode->pre = NULL;
-    newnode->next = Q1Ptr->Table[bin].head;
+    newnode->next = ptr;
 
     // if not first node, update pre for the old node
     if (Q1Ptr->Table[bin].head != NULL)
         Q1Ptr->Table[bin].head->pre = newnode;
-    // insert new node in, update size
+
     Q1Ptr->Table[bin].head = newnode;
     Q1Ptr->Table[bin].size++;
     Q1Ptr->nSize++;
     return 1;
 }
-
 int HashDelete(HashTable *Q1Ptr, int key)
 {
-    // returns 1 when deleted, 0 when not
     if (HashSearch(*Q1Ptr, key) == NULL || Q1Ptr == NULL) //  check if key exists
         return 0;
+
     int bin = Hash(key, Q1Ptr->hSize); // get bin
-    ListNode *ptr = Q1Ptr->Table[bin].head;
-
-    while (ptr->key != key) // go to node
-        ptr = ptr->next;
-
-    if (Q1Ptr->Table[bin].size == 1) // if deleting final node
-
-    {
-        Q1Ptr->Table[bin].head = NULL;
-    }
-    else if (ptr->pre == NULL) // if deleting first node
-    {
-        ptr->next->pre = NULL;
-        Q1Ptr->Table[bin].head = ptr->next;
-    }
-    else if (ptr->next == NULL) // if deleting last node
-    {
-        ptr->pre->next = NULL;
-    }
-    else // any other node
-    {
-        (ptr->pre)->next = ptr->next;
-        (ptr->next)->pre = ptr->pre;
-    }
-    // free n update size
-    free(ptr);
-    Q1Ptr->Table[bin].size--;
-    Q1Ptr->nSize--;
-    return 1;
 }
 
 int Hash(int key, int hSize)
