@@ -71,7 +71,6 @@ int main()
         printf("Enter two vertices which are adjacent to each other: (press a to stop)\n");
     }
     scanf("%*c");
-
     int res = Connected(g);
     if (res == 1)
         printf("The graph is connected.\n");
@@ -83,36 +82,41 @@ int main()
 
 int Connected(Graph g)
 {
+    // write your code here
     if (g.V == 1)
         return 1;
 
+    // int stack
     Stack s;
     s.head = NULL;
     s.size = 0;
+
     int temp;
     int count = 0;
     int connect;
 
+    // push 1 node in stack
     push(&s, 0);
     g.visited[0] = 1;
+
     while (!isEmptyStack(s))
     {
         temp = peek(s);
         connect = -1;
-        for (int j = 0; j < g.V; j++)
+        for (int i = 0; i < g.V; i++) // check ajacency matrix to find a connected node
         {
-            if (g.visited[j] == 0 && g.matrix[temp][j] == 1)
+            if (g.visited[i] == 0 && g.matrix[temp][i] == 1) // if find unvisited node and connected
             {
-                connect = j;
+                connect = i;
                 break;
             }
         }
-        if (connect == -1)
+        if (connect == -1) // if dead end, pop
         {
             pop(&s);
             count++;
         }
-        else
+        else // push into list
         {
             push(&s, connect);
             g.visited[connect] = 1;
@@ -120,8 +124,7 @@ int Connected(Graph g)
     }
     if (count == g.V)
         return 1;
-    else
-        return 0;
+    return 0;
 }
 
 void printGraphMatrix(Graph g)

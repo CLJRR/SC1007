@@ -57,71 +57,77 @@ int main()
         g.visited[i] = 0;
 
     int V1, V2;
-    printf("Enter two vertices which are adjacent to each other: (press a to stop)\n");
+    printf("Enter a directed edge: (press a to stop)\n");
     while (scanf("%d %d", &V1, &V2) == 2)
     {
         if (V1 > 0 && V1 <= g.V && V2 > 0 && V2 <= g.V)
         {
             g.matrix[V1 - 1][V2 - 1] = 1;
-            g.matrix[V2 - 1][V1 - 1] = 1;
             g.E++;
         }
         else
             break;
-        printf("Enter two vertices which are adjacent to each other: (press a to stop)\n");
+        printf("Enter a directed edge: (press a to stop)\n");
     }
     scanf("%*c");
 
     int res = Connected(g);
     if (res == 1)
-        printf("The graph is connected.\n");
+        printf("The graph is strongly connected.\n");
     else
-        printf("The graph is not connected.\n");
+        printf("The graph is not strongly connected.\n");
 
     return 0;
 }
 
 int Connected(Graph g)
 {
-    if (g.V == 1)
+    if (g.V == 1) // if one node
         return 1;
-
+    int temp;
+    int count;
+    int connect;
     Stack s;
     s.head = NULL;
     s.size = 0;
-    int temp;
-    int count = 0;
-    int connect;
 
-    push(&s, 0);
-    g.visited[0] = 1;
-    while (!isEmptyStack(s))
+    for (int i = 0; i < g.V; i++) // for all nodes
     {
-        temp = peek(s);
-        connect = -1;
+        // reset visited matrix and count
         for (int j = 0; j < g.V; j++)
+            g.visited[j] = 0;
+        count = 0;
+        push(&s, i);      // push node into stack
+        g.visited[i] = 1; // set as visited
+
+        while (!isEmptyStack(s)) // DFS
         {
-            if (g.visited[j] == 0 && g.matrix[temp][j] == 1)
+            temp = peek(s);
+            connect = -1;
+            for (int j = 0; j < g.V; j++)
             {
-                connect = j;
-                break;
+                if (g.visited[j] == 0 && g.matrix[temp][j] == 1)
+                {
+                    connect = j;
+                    break;
+                }
+            }
+
+            if (connect == -1) // if node not found
+            {
+                pop(&s);
+                count++;
+            }
+            else
+            {
+                push(&s, connect);
+                g.visited[connect] = 1;
             }
         }
-        if (connect == -1)
-        {
-            pop(&s);
-            count++;
-        }
-        else
-        {
-            push(&s, connect);
-            g.visited[connect] = 1;
-        }
+        if (count != g.V)
+            return 0;
     }
-    if (count == g.V)
-        return 1;
-    else
-        return 0;
+    return 1;
 }
 
 void printGraphMatrix(Graph g)
