@@ -43,10 +43,10 @@ int graphColoring(
     int **graph, int m,
     int *color, int v)
 {
-    if (v == V)
-    {
-        return 1;
-    }
+    // if (v == V)
+    // {
+    //     return 1;
+    // }
     for (int i = 1; i <= m; i++) // try all colors
     {
         if (isSafe(v, graph, color, i)) // if can place color, set color and color next
@@ -57,8 +57,9 @@ int graphColoring(
                 count++;
             }
         }
-        color[v] = 0; // remove color if cant color
+        color[v] = 0; // remove color when backtracking
     }
+
     return 0;
 }
 

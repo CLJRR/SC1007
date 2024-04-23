@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/calvi/source/repos/SC1007/Part2/Assign4redo",
-      "program": "c:/Users/calvi/source/repos/SC1007/Part2/Assign4redo/build/Debug/outDebug",
+      "cwd": "c:/Users/calvi/source/repos/SC1007",
+      "program": "c:/Users/calvi/source/repos/SC1007/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
