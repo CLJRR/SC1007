@@ -93,10 +93,11 @@ int Connected(Graph g)
     {
         for (int j = 0; j < g.V; j++)
             g.visited[j] = 0; // reset visited nodes
+        count = 0;
         push(&s, i);
         g.visited[i] = 1;
-        count = 0;
-        while (!isEmptyStack(s))
+
+                while (!isEmptyStack(s))
         {
             temp = peek(s);
             connect = -1;
