@@ -1,0 +1,59 @@
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
+// if csrftoken is not set then log an entry in
+// Sentry, so that we can debug something
+if (csrftoken === null) {
+    var message = 'csrftoken was null for this user on ' +  document.URL;
+    if (CSRF_COOKIE_USED) {
+        message += ' with CSRF_COOKIE_USED = ' + CSRF_COOKIE_USED;
+    } else {
+        message += ' with CSRF_COOKIE_USED = False';
+    }
+    if (CSRF_COOKIE) {
+        message += ' with CSRF_COOKIE = ' + CSRF_COOKIE;
+    }
+    if (!navigator.cookieEnabled) {
+        message += " because cookies are disabled in the browser";
+    } else {
+        message += " even though cookies are enabled in the browser";
+    }
+
+    message += " of following type \n";
+    var browser = $.browser;
+    for (var key in browser) {
+        if (browser.hasOwnProperty(key)) {
+            message += key + " : " + browser[key] + "\n";
+        }
+    }
+
+    // set the csrf cookie
+    csrftoken = CSRF_COOKIE;
+}
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    crossDomain: false, // obviates need for sameOrigin test
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type)) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
